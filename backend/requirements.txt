@@ -7,7 +7,8 @@ slowapi
 jinja2
 qrcode
 pydantic[email]
-passlib[bcrypt]
+passlib
+bcrypt==3.2.0
 python-jose[cryptography]
 python-multipart
 apscheduler
