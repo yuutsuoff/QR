@@ -4,7 +4,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
-from database import engine, Base, get_db
+from database import engine, Base, get_db, SessionLocal
 import models
 from routers import auth, qr, attendance, admin
 from cron import init_cron
@@ -26,6 +26,23 @@ async def lifespan(app: FastAPI):
     async with engine.begin() as conn:
         # await conn.run_sync(Base.metadata.drop_all) # For dev only
         await conn.run_sync(Base.metadata.create_all)
+    
+    # Auto-seed default admin if no users exist
+    async with SessionLocal() as db:
+        result = await db.execute(select(models.User))
+        users = result.scalars().all()
+        if not users:
+            import utils
+            hashed_password = utils.get_password_hash("Admin1234")
+            db_admin = models.User(
+                name="Super Admin",
+                email="admin@itlive.uz",
+                password=hashed_password,
+                role="admin"
+            )
+            db.add(db_admin)
+            await db.commit()
+            print("Auto-seeded default admin user: admin@itlive.uz")
     
     # init cron
     init_cron()
