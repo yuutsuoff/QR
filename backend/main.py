@@ -54,12 +54,8 @@ app = FastAPI(title="ITLive QR Attendance API", lifespan=lifespan, debug=True)
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
-# 1. Trusted Host Middleware
-allowed_hosts = os.getenv("ALLOWED_HOSTS", "localhost 127.0.0.1").split()
-app.add_middleware(
-    TrustedHostMiddleware, 
-    allowed_hosts=allowed_hosts
-)
+# Host middleware removed to allow Railway routing without 400 Bad Request
+
 
 # 2. Custom Security Headers Middleware
 @app.middleware("http")
